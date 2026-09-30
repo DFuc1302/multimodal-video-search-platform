@@ -1,0 +1,6 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: #172c46; background: #f4f7fb; }
+button, input, select { font: inherit; }
+#page-dres { min-height: 100vh; }
+.dres-heading h1 { margin: 5px 0 7px; font-size: 27px; color: #163451; }
+.dres-card h2 { font-size: 16px; color: #203f61; margin: 0 0 15px; }

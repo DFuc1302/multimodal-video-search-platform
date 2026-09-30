@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+numpy<2.0
+pillow
+opencv-python-headless
+tqdm
+faiss-cpu
+easyocr
+transformers
+ultralytics
+openai-whisper
+redis
+sentence-transformers

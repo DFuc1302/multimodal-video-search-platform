@@ -1,0 +1,37 @@
+#page-dres { overflow-y: auto; background: #f4f7fb; }
+body.dres-active #topbar { display: none; }
+.dres-shell { width: min(1160px, 100%); margin: 0 auto; padding: 26px 24px 60px; }
+.dres-heading, .dres-section-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.dres-heading { margin-bottom: 22px; }
+.dres-eyebrow { color: #536b87; font-size: 10px; font-weight: 750; letter-spacing: .13em; }
+.dres-heading h2 { margin: 5px 0 7px; font-size: 27px; color: #163451; }
+.dres-heading p, .dres-note { color: #57677b; line-height: 1.6; }
+.dres-badge { font-size: 11px; font-weight: 800; white-space: nowrap; background: #e5edf7; color: #274c78; border-radius: 6px; padding: 8px 12px; }
+.dres-badge.live { background: #ffead7; color: #8e380e; }
+.dres-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.dres-card { min-width: 0; padding: 22px; border: 1px solid #dbe3ee; border-radius: 12px; background: white; }
+.dres-card h3 { font-size: 16px; color: #203f61; margin-bottom: 15px; }
+.dres-card label { display: flex; flex-direction: column; gap: 7px; font-weight: 650; margin: 12px 0; }
+.dres-card input, .dres-card select { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #b9c9dc; border-radius: 6px; font: inherit; color: #172c46; background: white; }
+.dres-card input:focus-visible, .dres-card select:focus-visible, .dres-card button:focus-visible { outline: 3px solid #7db6ed; outline-offset: 2px; }
+.dres-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dres-actions { display: flex; flex-wrap: wrap; gap: 9px; margin: 14px 0; }
+.dres-card button { padding: 10px 14px; background: #245a91; color: white; border: 1px solid transparent; border-radius: 6px; font: inherit; font-weight: 650; }
+.dres-card button.dres-secondary { background: #f1f5fa; color: #264d76; border-color: #d3deeb; }
+.dres-card button:disabled { opacity: .48; cursor: not-allowed; }
+.dres-card p[role=status] { margin-top: 10px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dres-card [data-error=true] { color: #b12828; }
+.dres-card .dres-live-toggle { flex-direction: row; align-items: center; padding: 11px; border: 1px solid #cbd8e8; border-radius: 6px; }
+.dres-live-toggle input { width: 17px; height: 17px; }
+.dres-note { font-size: 12px; font-weight: 400; }
+.dres-wide { grid-column: 1 / -1; }
+.dres-empty { padding: 18px 0; color: #66768a; }
+.dres-card pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 15px; background: #f4f7fb; border-radius: 8px; margin-top: 10px; font-size: 12px; }
+.dres-card summary { cursor: pointer; color: #375c83; margin: 12px 0; }
+.dres-card table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.dres-card th, .dres-card td { border-bottom: 1px solid #e1e8f1; text-align: left; padding: 10px; vertical-align: top; overflow-wrap: anywhere; }
+.dres-table-wrap { overflow-x: auto; }
+.dres-card fieldset { border: 0; min-width: 0; }
+.dres-card [hidden] { display: none !important; }
+.dres-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 720px) { .dres-layout { grid-template-columns: 1fr; } .dres-shell { padding: 18px 12px 45px; } .dres-card { padding: 16px; } .dres-heading h2 { font-size: 23px; } .dres-heading { align-items: flex-start; } .dres-fields { grid-template-columns: 1fr; gap: 0; } }

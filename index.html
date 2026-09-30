@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frame Search</title>
+<link rel="stylesheet" href="static/styles.css">
+<link rel="stylesheet" href="static/dres.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="app-header"><div><span class="brand-mark" aria-hidden="true">▧</span><h1>Frame Search</h1><span class="brand-caption">Video discovery workspace</span></div><a class="skip-link" href="#results-wrap">Skip to results</a></header>
+<div id="topbar" role="search" aria-label="Frame search">
+  <div class="search-field scene-field">
+  <label class="lbl" for="inp-query">Scene description</label>
+  <input id="inp-query" type="text" placeholder="e.g. person, red shirt, motorcycle (comma = ALL)" autocomplete="off">
+  <select id="summary-mode" aria-label="Search source"><option value="visual">Visual</option><option value="summary">Summaries</option><option value="combined">Summaries + Visual</option></select>
+  <select id="summary-category" aria-label="Chủ đề">
+    <option value="">Tất cả chủ đề</option>
+    <option value="01">01 - Nấu ăn</option>
+    <option value="02">02 - Giáo dục</option>
+    <option value="03">03 - Thiên nhiên và Mekong</option>
+    <option value="04">04 - Văn hóa và múa lân</option>
+    <option value="05">05 - Thể thao</option>
+    <option value="06">06 - Cuộc thi và truyền cảm hứng</option>
+    <option value="07">07 - Pháp luật và công dân</option>
+    <option value="08">08 - Sức khỏe và y tế</option>
+    <option value="09">09 - Thời sự và xã hội</option>
+  </select>
+  <div id="query-operator-toggle" class="query-operator" role="group"
+       aria-label="How comma-separated scene terms are combined">
+    <button type="button" class="query-op active" data-operator="and" aria-pressed="true"
+            onclick="setQueryOperator('and')" title="Require every comma-separated term">AND</button>
+    <button type="button" class="query-op" data-operator="or" aria-pressed="false"
+            onclick="setQueryOperator('or')" title="Accept any comma-separated term">OR</button>
+  </div>
+  </div><div class="search-field ocr-field">
+  <label class="lbl" for="inp-ocr">Text in frame · OCR</label>
+  <input id="inp-ocr" type="text" placeholder="e.g. exit, airport (comma = ALL)" autocomplete="off">
+  <div id="ocr-operator-toggle" class="query-operator" role="group"
+       aria-label="How comma-separated OCR terms are combined">
+    <button type="button" class="ocr-op active" data-operator="and" aria-pressed="true"
+            onclick="setOcrOperator('and')" title="Require every comma-separated OCR term">AND</button>
+    <button type="button" class="ocr-op" data-operator="or" aria-pressed="false"
+            onclick="setOcrOperator('or')" title="Accept any comma-separated OCR term">OR</button>
+  </div>
+  </div><div class="search-field video-field">
+  <label class="lbl" for="inp-video">Video filter</label>
+  <input id="inp-video" type="text" placeholder="e.g. L20_V001" autocomplete="off" style="width:110px;">
+  <button type="button" id="btn-video-mode" class="video-mode-toggle" data-mode="include"
+          aria-pressed="false" aria-label="Video filter: include matching video"
+          title="Only return frames from this video" onclick="toggleVideoMode()">✓ Include</button>
+  </div><div class="search-options">
+  <label title="Use the local vision model to check objects and relationships"><input type="checkbox" id="inp-rerank" disabled> Refine relationships</label>
+  <label title="Use frames before and after the match"><input type="checkbox" id="inp-timeline"> Follow timeline</label>
+  <span id="rerank-status" role="status" style="font-size:11px"></span>
+  <button id="btn-search" disabled>Loading search…</button>
+  <div class="sep"></div>
+  <span class="lbl">1,000 frames / page</span>
+  <div class="sep"></div>
+  <div id="conf-wrap">
+    <span>Min conf:</span>
+    <input type="range" id="conf-slider" aria-label="Minimum detection confidence" min="0" max="95" value="0" step="5">
+    <span id="conf-val">0%</span>
+  </div>
+  <div class="sep"></div>
+  <select id="sel-task-mode" aria-label="Answer task mode" onchange="setTaskMode(this.value)"
+    style="padding:5px 8px;border:1px solid #ccc;border-radius:4px;font-size:12px;background:#fff;cursor:pointer;">
+    <option value="kis">📝 Textual KIS</option>
+    <option value="vqa">❓ VQA</option>
+    <option value="temporal">⏱ Temporal Alignment</option>
+  </select>
+  <button id="btn-group-toggle" aria-pressed="false" onclick="toggleGroupMode()">📁 Group by Video</button>
+  <button id="btn-answer-toggle" aria-pressed="false" onclick="toggleAnswerMode()">🏆 Answer Mode</button>
+  <button id="btn-memory-toggle" onclick="toggleMemoryPanel()" aria-expanded="false">
+    🔖 Saved <span id="memory-count">0</span>
+  </button>
+  <div id="status-pill" role="status">Connecting…</div>
+  <div id="index-pill" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<nav id="tabs" role="tablist" aria-label="Search tools">
+  <button type="button" class="tab active" id="tab-search" role="tab" data-page="search" aria-controls="page-search" aria-selected="true" tabindex="0" onclick="switchTab('search')">🔍 Frame Search</button>
+  <button type="button" class="tab" id="tab-asr" role="tab" data-page="asr" aria-controls="page-asr" aria-selected="false" tabindex="-1" onclick="switchTab('asr')">🎙 ASR Search</button>
+  <button type="button" class="tab" id="tab-match" role="tab" data-page="match" aria-controls="page-match" aria-selected="false" tabindex="-1" onclick="switchTab('match')">🎬 Video Match</button>
+  <button type="button" class="tab" id="tab-kisc" role="tab" data-page="kisc" aria-controls="page-kisc" aria-selected="false" tabindex="-1" onclick="switchTab('kisc')">💬 Conversational KIS</button>
+  <button type="button" class="tab" id="tab-dres" role="tab" data-page="dres" aria-controls="page-dres" aria-selected="false" tabindex="-1" onclick="switchTab('dres')">🚀 Nộp DRES</button>
+  <button type="button" class="tab" id="tab-settings" role="tab" data-page="settings" aria-controls="page-settings" aria-selected="false" tabindex="-1" onclick="switchTab('settings')">⚙️ System</button>
+</nav>
+
+<!-- FRAME SEARCH PAGE -->
+<div class="page active" id="page-search" role="tabpanel" aria-labelledby="tab-search">
+  <div id="answer-mode-banner">
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px;">
+      <button onclick="answerNav(-1)" style="font-size:20px;padding:4px 14px;background:#f0f0f0;border:1px solid #ccc;border-radius:4px;cursor:pointer;">◀</button>
+      <span id="answer-nav-label" style="font-size:12px;color:#888;min-width:80px;text-align:center;">— / —</span>
+      <button onclick="answerNav(1)"  style="font-size:20px;padding:4px 14px;background:#f0f0f0;border:1px solid #ccc;border-radius:4px;cursor:pointer;">▶</button>
+      <button onclick="answerSelect()" id="btn-answer-select"
+        style="background:#27ae60;color:#fff;padding:5px 16px;font-size:13px;border-radius:4px;border:none;cursor:pointer;">
+        ✓ Select as Answer
+      </button>
+    </div>
+    <img id="answer-frame" src="" alt="">
+    <div id="answer-info">
+      <div id="answer-filename">—</div>
+      <div id="answer-score"></div>
+    </div>
+  </div>
+  <div class="results-toolbar"><button type="button" id="btn-filters" aria-controls="sidebar" aria-expanded="false" onclick="toggleFilters()">Categories &amp; colors</button><span>Explore matches, preview frames, and save your answers.</span></div>
+  <div id="main">
+    <div id="sidebar">
+      <div class="sidebar-section">
+        <h2>Categories &amp; Objects</h2>
+        <div id="cat-list"><span style="color:#bbb;font-size:11px">Loading…</span></div>
+      </div>
+    </div>
+    <div id="results-wrap" tabindex="-1" aria-label="Frame results">
+      <div id="search-error" role="alert" hidden><span></span><button type="button" onclick="doSearch()">Try again</button></div>
+      <div id="results-meta" role="status"></div>
+      <div id="spinner" role="status">Searching…</div>
+      <div id="grid"></div>
+      <div id="empty"><strong>Find the moment you need</strong><br>Describe a scene, search on-screen text, or choose a category.<br><span>Use commas to combine terms with AND / OR.</span></div>
+      <div id="frame-pagination" hidden>
+        <button id="btn-frame-prev" onclick="setFramePage(framePage-1)">Previous</button>
+        <label>Page <input id="inp-frame-page" type="number" value="1" min="1" style="width:60px" onchange="setFramePage(this.value)"></label>
+        <span id="frame-total-pages"></span>
+        <button id="btn-frame-next" onclick="setFramePage(framePage+1)">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ASR PAGE -->
+<div class="page" id="page-asr" role="tabpanel" aria-labelledby="tab-asr">
+  <div id="asr-wrap">
+    <div id="asr-controls">
+      <button id="btn-asr-transcribe" hidden disabled style="display:none">
+        ⚡ Transcribe All
+      </button>
+      <span class="lbl">ASR do nhóm khác xử lý; tìm kiếm dùng dữ liệu đã nhập.</span>
+      <div id="asr-index-status" style="font-size:11px;color:#888;white-space:nowrap;"></div>
+      <div class="sep"></div>
+      <label class="lbl" for="inp-asr-phrase">🎙 Phrase:</label>
+      <input id="inp-asr-phrase" type="text" placeholder="e.g. hello, thank you (comma = ALL)">
+      <div id="asr-operator-toggle" class="query-operator" role="group"
+           aria-label="How comma-separated ASR terms are combined">
+        <button type="button" class="asr-op active" data-operator="and" aria-pressed="true"
+                onclick="setAsrOperator('and')" title="Require every comma-separated phrase">AND</button>
+        <button type="button" class="asr-op" data-operator="or" aria-pressed="false"
+                onclick="setAsrOperator('or')" title="Accept any comma-separated phrase">OR</button>
+      </div>
+      <span class="lbl">1,000 frames / page</span>
+      <button id="btn-asr-search">Search Audio</button>
+    </div>
+    <div id="asr-meta"></div>
+    <div id="asr-spinner">Searching transcripts…</div>
+    <div id="asr-grid"></div>
+    <div id="asr-empty">
+      ASR Search reads completed transcripts from <strong>asr_cache.json</strong>.<br>
+      Original videos are needed only when creating or rebuilding that cache.<br>
+      Type a phrase and click <strong>Search Audio</strong> for instant results.
+    </div>
+    <div id="asr-pagination" hidden>
+      <button id="btn-asr-prev" onclick="setAsrPage(asrSearchState.page-1)">Previous</button>
+      <label>Page <input id="inp-asr-page" type="number" value="1" min="1" style="width:60px" onchange="setAsrPage(this.value)"></label>
+      <span id="asr-total-pages"></span>
+      <button id="btn-asr-next" onclick="setAsrPage(asrSearchState.page+1)">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO MATCH PAGE -->
+<div class="page" id="page-match" role="tabpanel" aria-labelledby="tab-match">
+  <div style="flex:1;overflow-y:auto;padding:12px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;
+                padding:10px 12px;background:#fff;border:1px solid #ddd;border-radius:5px;">
+      <label class="lbl" for="inp-match-desc">📝 Describe what you saw:</label>
+      <input id="inp-match-desc" type="text" placeholder="e.g. two people talking in a dark room with neon lights"
+        style="flex:2;min-width:220px;padding:5px 9px;border:1px solid #ccc;border-radius:4px;font-size:13px;outline:none;">
+      <span class="lbl">1,000 frames / page</span>
+      <button id="btn-match" onclick="doVideoMatch()" style="background:#c0392b;color:#fff;padding:5px 14px;">
+        🔍 Find Video
+      </button>
+    </div>
+    <div id="match-meta" style="font-size:11px;color:#888;margin-bottom:8px;"></div>
+    <div id="match-spinner" style="display:none;text-align:center;color:#888;padding:40px;">Searching…</div>
+    <div id="match-results"></div>
+    <div id="match-pagination" class="search-pagination" hidden></div>
+    <div id="match-empty" style="text-align:center;color:#aaa;padding:60px 20px;font-size:13px;line-height:2;">
+      Watch the clip, then describe what you saw and click <strong>Find Video</strong>.<br>
+      Results are grouped by source video — the top result is your answer.
+    </div>
+  </div>
+</div>
+
+<!-- CONVERSATIONAL KIS (KISC) PAGE -->
+<div class="page" id="page-kisc" role="tabpanel" aria-labelledby="tab-kisc">
+  <div id="kisc-main">
+    <div id="kisc-chat">
+      <div id="kisc-chat-head">
+        <h2>💬 Conversational KIS</h2>
+        <button id="kisc-new-session" onclick="kiscNewSession()">↻ New session</button>
+      </div>
+      <div id="kisc-messages">
+        <div class="kisc-msg bot">Describe what you're looking for — you don't need to get it right the first time, I'll ask follow-up questions to narrow it down.</div>
+      </div>
+      <div id="kisc-slots"></div>
+      <div id="kisc-input-row">
+        <input id="inp-kisc" type="text" placeholder="e.g. tôi gặp bạn cũ vào tuần trước" autocomplete="off">
+      <span class="lbl">1,000 frames / page</span>
+        <button id="kisc-send" onclick="kiscSend()">Send</button>
+      </div>
+    </div>
+    <div id="kisc-results-wrap">
+      <div id="kisc-meta"></div>
+      <div id="kisc-grid" class="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+      <div id="kisc-empty">Results will appear here as the conversation narrows down.</div>
+      <div id="kisc-pagination" class="search-pagination" hidden></div>
+    </div>
+  </div>
+</div>
+
+<!-- SYSTEM / SETTINGS PAGE -->
+<div class="page" id="page-settings" role="tabpanel" aria-labelledby="tab-settings">
+  <div style="flex:1;overflow-y:auto;padding:14px;max-width:700px;">
+
+    <div class="settings-card">
+      <h3>Competition session</h3>
+      <button onclick="newEvaluationSession()">Start new competition session</button>
+      <p id="evaluation-status">Queries and answers are stored as private fingerprints for evaluation.</p>
+    </div>
+    <div class="settings-card">
+      <h3>📦 Index Management</h3>
+      <div class="settings-row">
+        <button onclick="runIndexing()" style="background:#27ae60;color:#fff;">⚡ Index New Frames</button>
+        <span id="index-status-text" style="font-size:12px;color:#666;">Checks keyframes/ for new files and indexes them.</span>
+      </div>
+      <div class="settings-row" id="index-progress-row" style="display:none;">
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="index-progress-fill" style="width:0%"></div></div>
+        <span id="index-progress-text" style="font-size:12px;color:#666;white-space:nowrap;">0 / 0</span>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>🩺 System Health</h3>
+      <div class="settings-row">
+        <button onclick="refreshHealth()" style="background:#4a90e2;color:#fff;">↻ Refresh</button>
+      </div>
+      <div class="health-grid" id="health-grid">
+        <div class="health-item">Loading…</div>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h3>💾 Backup</h3>
+      <div class="settings-row">
+        <button onclick="createBackup()" style="background:#8e44ad;color:#fff;">📦 Create Backup</button>
+        <span id="backup-status" style="font-size:12px;color:#666;"></span>
+      </div>
+      <div id="backup-list" style="margin-top:8px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<section class="page" id="page-dres" role="tabpanel" aria-labelledby="tab-dres" lang="vi">
+  <div class="dres-shell">
+    <div class="dres-heading"><div><span class="dres-eyebrow">AI CHALLENGE 2026 · CHUNG KẾT</span><h2>Nộp đáp án DRES</h2><p>Nhập frame gốc, kiểm tra thời gian, rồi nộp cho câu đang thi.</p></div><span id="dres-mode-badge" class="dres-badge">MÔ PHỎNG</span></div>
+    <div class="dres-layout">
+      <section class="dres-card"><h3>1. Kết nối cuộc thi</h3>
+        <form id="dres-login-form">
+          <label>Địa chỉ DRES<input id="dres-host" type="url" value="https://eventretrieval.one" required></label>
+          <div class="dres-fields"><label>Tài khoản<input id="dres-user" value="team_636" autocomplete="username" required></label><label>Mật khẩu<input id="dres-password" type="password" autocomplete="current-password" required></label></div>
+          <div class="dres-actions"><button id="dres-login" type="submit">Đăng nhập</button><button id="dres-disconnect" type="button" class="dres-secondary">Ngắt kết nối</button></div>
+        </form>
+        <p id="dres-connection-status" role="status">Chưa đăng nhập. Có thể kiểm tra và mô phỏng đáp án.</p>
+        <label>Phiên thi<select id="dres-evaluation"><option value="">Chưa có phiên thi</option></select></label>
+        <div class="dres-actions"><button id="dres-refresh" type="button" class="dres-secondary">Tải lại phiên thi</button><button id="dres-current" type="button" class="dres-secondary">Xem câu hiện tại</button></div>
+        <p id="dres-current-task" role="status">Câu thi sẽ được kiểm tra lại ngay trước khi nộp.</p>
+        <label class="dres-live-toggle"><input id="dres-live" type="checkbox"> Nộp thật lên DRES</label>
+        <p class="dres-note">Mặc định mô phỏng. Chỉ bật nộp thật khi đúng tài khoản và phiên thi. Mật khẩu không được lưu vào file.</p>
+      </section>
+      <section class="dres-card"><h3>2. Chuẩn bị đáp án</h3>
+        <fieldset id="dres-answer-fields"><legend class="dres-sr-only">Thông tin đáp án</legend>
+          <label>Dạng câu hỏi<select id="dres-type"><option value="textual_kis">Textual KIS · 5 phút</option><option value="video_kis">Video KIS · 4 phút</option><option value="qa">Q&amp;A · 5 phút</option><option value="trake">TRAKE · 5 phút</option></select></label>
+          <p id="dres-type-help" class="dres-note">Chọn một frame đại diện cho sự kiện. Hệ thống đổi sang mili giây.</p>
+          <label>Video ID<input id="dres-video" placeholder="Ví dụ: L21_V001 hoặc N001-V001" autocomplete="off"></label>
+          <label><span id="dres-frames-label">Frame ID gốc</span><input id="dres-frames" placeholder="Ví dụ: 261" autocomplete="off" inputmode="numeric"></label>
+          <p class="dres-note">Nhập frame_idx trong video gốc, không phải số thứ tự ảnh n. Frame chưa có ánh xạ sẽ bị chặn; không tự nội suy thời gian.</p>
+          <label id="dres-answer-label" hidden>Câu trả lời Q&amp;A<input id="dres-answer" placeholder="Nhập câu trả lời chính xác" maxlength="2000"></label>
+          <div class="dres-actions"><button id="dres-import" type="button" class="dres-secondary">Lấy từ frame đã chọn</button><button id="dres-preview" type="button">Kiểm tra đáp án</button></div>
+        </fieldset>
+        <p id="dres-status" role="status" aria-live="polite"></p>
+      </section>
+      <section class="dres-card dres-wide"><div class="dres-section-title"><h3>3. Xem trước và nộp</h3><span id="dres-preview-mode" class="dres-note">Chưa kiểm tra đáp án</span></div>
+        <div id="dres-preview-details" class="dres-empty">Thông tin video, frame gốc và thời gian sẽ xuất hiện ở đây.</div>
+        <details><summary>Xem nội dung gửi DRES</summary><pre id="dres-payload">Chưa có đáp án</pre></details>
+        <div class="dres-actions"><button id="dres-submit" type="button" disabled>Mô phỏng nộp</button><button id="dres-copy" type="button" class="dres-secondary" disabled>Sao chép JSON</button></div>
+        <p id="dres-result" role="status" aria-live="polite"></p>
+      </section>
+      <section class="dres-card dres-wide"><div class="dres-section-title"><h3>Lịch sử nộp</h3><button id="dres-history-refresh" type="button" class="dres-secondary">Tải lịch sử</button></div>
+        <p class="dres-note">“Đã nhận” không đồng nghĩa “đúng”. Nếu mất phản hồi, xem lịch sử trên DRES trước; hệ thống không tự gửi lại.</p>
+        <div id="dres-history" class="dres-empty">Chưa có lượt nộp trong tab này.</div>
+      </section>
+    </div>
+  </div>
+</section>
+
+<div id="tooltip"></div>
+
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Frame preview">
+  <button id="lb-close" aria-label="Close frame preview" onclick="closeLightbox()">✕</button>
+  <div id="lb-wrap">
+    <img id="lb-img" src="" alt="">
+    <canvas id="lb-canvas"></canvas>
+  </div>
+  <div id="lb-meta"></div>
+  <label style="color:white"><input id="lb-timeline" type="checkbox" onchange="reloadLightboxContext()"> Timeline ±10 seconds</label>
+  <div id="lb-neighbors"></div>
+</div>
+
+<div id="memory-backdrop" onclick="closeMemoryPanel()"></div>
+<aside role="dialog" aria-modal="true" id="memory-panel" aria-hidden="true" aria-label="Saved queries">
+  <div class="memory-panel-head">
+    <div>
+      <h2>🔖 Saved queries</h2>
+      <span>Click a frame ID to open its image</span>
+    </div>
+    <button id="memory-close" onclick="closeMemoryPanel()" aria-label="Close saved queries">✕</button>
+  </div>
+  <div id="memory-list"></div>
+</aside>
+
+<script defer src="static/utils.js"></script>
+<script defer src="static/components.js"></script>
+<script defer src="static/images.js"></script>
+<script defer src="static/app.js"></script>
+<script defer src="static/dres.js"></script>
+</body>
+</html>

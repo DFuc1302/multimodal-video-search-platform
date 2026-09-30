@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nộp bài DRES</title>
+  <link rel="stylesheet" href="/static/submission.css">
+  <link rel="stylesheet" href="/static/dres.css">
+</head>
+<body>
+<main id="page-dres">
+  <div class="dres-shell">
+    <div class="dres-heading"><div><span class="dres-eyebrow">AI CHALLENGE 2026 · CHUNG KẾT</span><h1>Nộp đáp án DRES</h1><p>Server tối giản chỉ dùng để kiểm tra và nộp bài.</p></div><span id="dres-mode-badge" class="dres-badge">MÔ PHỎNG</span></div>
+    <div class="dres-layout">
+      <section class="dres-card"><h2>1. Kết nối cuộc thi</h2>
+        <p id="dres-connection-status" role="status">Đang kết nối bằng tài khoản đã cấu hình…</p>
+        <label>Phiên thi<select id="dres-evaluation"><option value="">Chưa có phiên thi</option></select></label>
+        <div class="dres-actions"><button id="dres-connect" type="button">Kết nối lại</button><button id="dres-refresh" type="button" class="dres-secondary">Tải lại phiên thi</button><button id="dres-current" type="button" class="dres-secondary">Xem câu hiện tại</button></div>
+        <p id="dres-current-task" role="status">Câu thi sẽ được kiểm tra lại ngay trước khi nộp.</p>
+        <label class="dres-live-toggle"><input id="dres-live" type="checkbox"> Nộp thật lên DRES</label>
+        <p class="dres-note">Mặc định là mô phỏng. Chỉ bật nộp thật sau khi kiểm tra đúng phiên và đúng câu.</p>
+      </section>
+      <section class="dres-card"><h2>2. Chuẩn bị đáp án</h2>
+        <fieldset id="dres-answer-fields"><legend class="dres-sr-only">Thông tin đáp án</legend>
+          <label>Dạng câu hỏi<select id="dres-type"><option value="textual_kis">Textual KIS</option><option value="video_kis">Video KIS</option><option value="qa">Q&amp;A</option><option value="trake">TRAKE</option></select></label>
+          <p id="dres-type-help" class="dres-note">Chọn một frame đại diện cho sự kiện.</p>
+          <label>Video ID<input id="dres-video" placeholder="Ví dụ: N001-V001" autocomplete="off"></label>
+          <label>Loại số đang nhập<select id="dres-frame-mode"><option value="frame_idx">idx gốc (frame_idx)</option><option value="n">ID ảnh (n trong map-keyframes)</option></select></label>
+          <label><span id="dres-frames-label">idx gốc (frame_idx)</span><input id="dres-frames" placeholder="Ví dụ: 261" autocomplete="off" inputmode="numeric"></label>
+          <div class="dres-stepper"><button id="dres-minus" type="button" class="dres-secondary">−</button><label>Bước tăng/giảm<input id="dres-step" type="number" min="1" step="1" value="1"></label><button id="dres-plus" type="button" class="dres-secondary">+</button></div>
+          <label id="dres-answer-label" hidden>Câu trả lời Q&amp;A<input id="dres-answer" maxlength="2000"></label>
+          <div class="dres-actions"><button id="dres-preview" type="button">Kiểm tra đáp án</button></div>
+        </fieldset>
+        <p id="dres-status" role="status" aria-live="polite"></p>
+      </section>
+      <section class="dres-card dres-wide"><div class="dres-section-title"><h2>3. Xem trước và nộp</h2><span id="dres-preview-mode" class="dres-note">Chưa kiểm tra đáp án</span></div>
+        <div id="dres-preview-details" class="dres-empty">Thông tin video, frame và thời gian sẽ xuất hiện ở đây.</div>
+        <details><summary>Xem nội dung gửi DRES</summary><pre id="dres-payload">Chưa có đáp án</pre></details>
+        <div class="dres-actions"><button id="dres-submit" type="button" disabled>Mô phỏng nộp</button><button id="dres-copy" type="button" class="dres-secondary" disabled>Sao chép JSON</button></div>
+        <p id="dres-result" role="status" aria-live="polite"></p>
+      </section>
+      <section class="dres-card dres-wide"><div class="dres-section-title"><h2>Lịch sử nộp</h2><button id="dres-history-refresh" type="button" class="dres-secondary">Tải lịch sử</button></div>
+        <p class="dres-note">“Đã nhận” không đồng nghĩa “đúng”. Nếu mất phản hồi, kiểm tra lịch sử trước khi thao tác tiếp.</p>
+        <div id="dres-history" class="dres-empty">Chưa có lượt nộp.</div>
+      </section>
+    </div>
+  </div>
+</main>
+<script src="/static/utils.js"></script>
+<script src="/static/dres_input.js"></script>
+<script src="/static/submission.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+const assert = require('node:assert/strict');
+const {stepFrame} = require('./static/dres_input.js');
+assert.equal(stepFrame('138', 1, 1, 1).text, '139');
+assert.equal(stepFrame('138', 1, -1, 10).text, '128');
+assert.equal(stepFrame('90, 138, 200', 5, 1, 2).text, '90, 140, 200');
+assert.throws(() => stepFrame('0', 0, -1, 1));
+assert.throws(() => stepFrame('138', 0, 1, 0));
+assert.throws(() => stepFrame('138x', 0, 1, 1));
+assert.throws(() => stepFrame('9007199254740991', 0, 1, 1));
+console.log('PASS: +/- idx, TRAKE cursor, bounds, malformed inputs');

@@ -1,0 +1,57 @@
+# WSL Ubuntu 24.04 / Python 3.12
+# AI Challenge fast search stack:
+# - PyTorch CUDA 11.8 for CLIP, YOLO, Whisper, EasyOCR GPU
+# - FAISS CPU for vector search
+# - EasyOCR instead of PaddleOCR to avoid Paddle/PaddleX oneDNN conflicts
+
+--extra-index-url https://download.pytorch.org/whl/cu118
+
+# Build tools. openai-whisper setup.py imports pkg_resources, which is provided
+# by setuptools. Keep setuptools pinned and install with --no-build-isolation.
+setuptools==69.5.1
+wheel==0.43.0
+
+# Core numeric stack. Keep numpy < 2.0 for broad ML/CV compatibility.
+numpy==1.26.4
+scipy==1.12.0
+scikit-image==0.23.2
+imageio==2.34.2
+tifffile==2024.5.22
+lazy-loader==0.4
+
+# PyTorch CUDA 11.8
+torch==2.6.0+cu118
+torchvision==0.21.0+cu118
+torchaudio==2.6.0+cu118
+
+# OCR
+easyocr==1.7.2
+ninja==1.13.0
+opencv-python-headless==4.10.0.84
+Pillow==10.4.0
+
+# API / server
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Vector search
+faiss-cpu==1.9.0.post1
+
+# CLIP / YOLO / ASR
+transformers==4.46.3
+tokenizers==0.20.3
+ultralytics==8.3.58
+openai-whisper==20240930
+numba==0.60.0
+tqdm==4.67.1
+
+# Utility dependencies commonly required by the stack above.
+requests==2.32.3
+PyYAML==6.0.2
+regex==2024.11.6
+filelock==3.16.1
+safetensors==0.4.5
+huggingface-hub==0.26.5
+redis==5.2.1
+sentence-transformers==3.3.1
