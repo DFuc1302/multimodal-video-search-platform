@@ -19,7 +19,7 @@ class FolderFilterTests(unittest.TestCase):
 
     def test_sql_filter_includes_all_frames_without_video_facets(self):
         # Exercise the real query builder without importing GPU/model dependencies.
-        source = ast.parse(Path(__file__).with_name('shared.py').read_text(encoding='utf-8'))
+        source = ast.parse((Path(__file__).parent / 'app' / 'shared.py').read_text(encoding='utf-8'))
         function = next(n for n in source.body if isinstance(n, ast.FunctionDef)
                         and n.name == 'query_frame_files')
         conn = sqlite3.connect(':memory:')
