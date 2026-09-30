@@ -150,7 +150,7 @@ for group in GROUPS:
 print(f'Đã kiểm tra {len(GROUPS)} nhóm: {len(GROUPS)} ZIP + {len(GROUPS)} checksum.')
 """)
     cell("markdown", """## Chạy trên máy local
-Xem `CODE/README_COLAB_BATCH3.md`. Dùng `import_colab_batch3.py` để giải nén,
+Xem `docs/archive/aic-2026/README_COLAB_BATCH3.md`. Dùng `import_colab_batch3.py` để giải nén,
 kiểm tra và gộp chỉ mục. Có thể thêm `--old-index` để gộp dataset hiện có.
 Máy local không cần chạy lại CLIP/OCR/YOLO; bước gộp FAISS vẫn cần RAM và CPU.
 Batch 3 chưa có transcript ASR. Kết quả ASR từ người phụ trách cần được gộp riêng sau đó.

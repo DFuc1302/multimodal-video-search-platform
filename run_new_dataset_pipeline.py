@@ -71,7 +71,7 @@ def preflight(stage):
         modules.update({"faiss", "easyocr", "transformers", "ultralytics", "redis", "cv2"})
     missing = sorted(name for name in modules if importlib.util.find_spec(name) is None)
     if missing:
-        raise RuntimeError(f"Missing Python modules in {sys.executable}: {', '.join(missing)}. See README_NEW_DATASET.md")
+        raise RuntimeError(f"Missing Python modules in {sys.executable}: {', '.join(missing)}. See docs/archive/aic-2026/README_NEW_DATASET.md")
     import torch
     if not torch.cuda.is_available():
         raise RuntimeError("PyTorch cannot access CUDA in this environment")
