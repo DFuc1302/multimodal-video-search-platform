@@ -2281,10 +2281,6 @@ def _find_asr_map_csv(video_stem: str) -> Optional[Path]:
     return None
 
 
-from dres_submission import create_router as create_dres_router
-app.include_router(create_dres_router(_find_asr_map_csv))
-
-
 def _load_asr_keyframe_timeline(video_stem: str) -> tuple[list[dict], dict]:
     try:
         if REDIS_TEXT_ENABLED:

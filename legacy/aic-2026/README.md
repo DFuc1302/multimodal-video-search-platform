@@ -6,3 +6,6 @@ runtime and pipeline checks.
 
 The active processing path is documented in docs/PIPELINE_MAP.md and lives
 under pipeline/. The active search runtime lives under app/.
+
+The submission/ folder contains the retired DRES gateway, submission UI and
+competition launchers. It is intentionally not imported by app/main.py.
