@@ -1,0 +1,3 @@
+# Search API and serving dependencies.
+# The broad WSL list is retained for reproducible GPU/CPU environments.
+-r ../requirements_wsl.txt
