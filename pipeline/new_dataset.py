@@ -22,7 +22,7 @@ import uuid
 from pathlib import Path
 from tqdm import tqdm
 
-from run_s01_pipeline import save_json, run
+from pipeline.run import save_json, run
 from external_assets import ExternalAssetResolver, video_id_from_path
 from server_data_health import record_issue
 
