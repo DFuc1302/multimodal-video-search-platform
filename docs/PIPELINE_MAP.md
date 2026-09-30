@@ -37,6 +37,16 @@ The runtime consumes the output of the processing stages:
 - `run_local_server_wsl.sh`: local server launcher.
 - `static/` and `index.html`: browser interface.
 
+The reusable orchestration entry points are now package modules:
+
+```text
+python -m pipeline.run          # resumable prepare/dedup/index/asr/bundle flow
+python -m pipeline.new_dataset  # merge/verify/redis/activate flow
+```
+
+The old root commands `run_s01_pipeline.py` and `run_new_dataset_pipeline.py`
+remain as compatibility wrappers during the migration.
+
 Competition submission and gateway code is kept separate from the reusable
 processing/runtime path until its dependencies are audited:
 `competition_server.py`, `submission_server.py`, `dres_*.py`,
