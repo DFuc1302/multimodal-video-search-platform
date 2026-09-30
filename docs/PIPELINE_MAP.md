@@ -17,11 +17,11 @@ must consume a completed bundle without rebuilding it at startup.
 | Manifest and layout | `video_manifest.py`, `dataset_layout.py`, `dataset_assignment.json` | video/frame manifest and dataset layout |
 | Frame extraction | `pipeline/frames/extract.py`, `re_extract.py` | keyframes and frame metadata |
 | Frame dedupe | `pipeline/frames/dedup.py`, `dedup_active_index.py` | deduplicated frames and maps |
-| Merge and normalization | `preprocess_dataset.py`, `merge_processed_data.py`, `extend_merged_data.py`, `finalize_merged_data.py` | normalized serving data |
+| Merge and normalization | `pipeline/preprocess/run.py`, `pipeline/preprocess/merge.py`, `pipeline/preprocess/extend.py`, `finalize_merged_data.py` | normalized serving data |
 | OCR | `pipeline/ocr/index.py`, `ocr_quality.py`, `reindex_ocr.py`, `rerun_n_top_ocr.py` | OCR rows and text index |
 | ASR | `pipeline/asr/index.py`, `check_asr_status.py`, `repair_asr_redis.py` | transcript cache and ASR rows |
-| Bundle and vector index | `prepare_serve_bundle.py`, `build_central_search_index.py`, `export_shard.py` | SQLite/FAISS/CLIP serving bundle |
-| Redis migration | `migrate_to_redis.py`, `redis_store.py`, `redis_serving.py` | optional text/summary Redis index |
+| Bundle and vector index | `pipeline/index/bundle.py`, `pipeline/index/central.py`, `pipeline/index/export.py` | SQLite/FAISS/CLIP serving bundle |
+| Redis migration | `pipeline/index/redis.py`, `redis_store.py`, `redis_serving.py` | optional text/summary Redis index |
 | Validation | `evaluate_search.py`, `server_data_health.py`, `verify_package.py`, tests | reports and readiness checks |
 
 The scripts remain at the repository root during the first cleanup phase. They
