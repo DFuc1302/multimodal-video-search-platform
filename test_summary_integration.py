@@ -122,7 +122,7 @@ class SummaryIntegrationTests(unittest.TestCase):
         import threading
         from types import SimpleNamespace
         from fastapi import Query
-        tree = ast.parse((Path(__file__).parent/'main.py').read_text(encoding='utf-8'))
+        tree = ast.parse((Path(__file__).parent/'app'/'main.py').read_text(encoding='utf-8'))
         function = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name=='search_summaries')
         function.decorator_list=[]
         old_file='09_news/keyframes/L01_V001/001.jpg'
