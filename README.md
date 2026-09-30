@@ -1,70 +1,77 @@
-# Multimodal video search
+# Reusable multimodal video search
 
-Reusable video-processing and search code for a university project. The
-repository keeps processing code separate from the search application and
-keeps generated media, models, indexes and Redis data outside Git.
+This repository contains a reusable university project for processing video,
+building multimodal indexes and serving search results. Generated media,
+models, databases, FAISS indexes and Redis data are kept outside the Git
+checkout.
 
-## Layout
-
-```text
-app/                 Search API and runtime helpers
-app/services/        Redis, telemetry, health, conversation and reranking services
-pipeline/            Ingest, frames, dedupe, OCR, ASR, merge and index stages
-web assets            index.html and static/
-tests                Active regression tests at the repository root for now
-docs/                Architecture and pipeline documentation
-legacy/aic-2026/     Historical Colab, batch and competition tools
-```
-
-The end-to-end flow is:
+## Repository map
 
 ```text
-raw videos -> manifest -> frames -> dedupe -> OCR/ASR
-           -> merge/index -> serving bundle -> search API
+app/                  FastAPI search application and runtime services
+pipeline/             Ingest, frames, dedupe, merge, OCR, ASR and indexing
+static/               Browser assets
+benchmark/            Evaluation notes and frozen qrels workflow
+docs/                 Architecture, pipeline map and maintenance notes
+legacy/aic-2026/      Retired competition, Colab and submission utilities
+requirements/         Runtime, pipeline and development dependency sets
 ```
 
-See [docs/PIPELINE_MAP.md](docs/PIPELINE_MAP.md) for the stage contracts and
-[ARCHITECTURE.md](ARCHITECTURE.md) for the application structure.
+The processing flow is:
 
-## Pipeline entry points
-
-The compatibility commands remain available:
-
-```bash
-python run_s01_pipeline.py --help
-python run_new_dataset_pipeline.py --help
-python preprocess_dataset.py --help
+```text
+videos -> manifest -> frames -> dedupe -> merge
+       -> OCR + ASR -> bundle/index -> validation -> search API
 ```
 
-The packaged commands are:
+## Start with the documentation
+
+- [Architecture](docs/ARCHITECTURE.md) — application and browser structure.
+- [Pipeline map](docs/PIPELINE_MAP.md) — stage inputs, outputs and contracts.
+- [Pipeline guide](pipeline/README.md) — packaged stage entry points.
+- [Requirements](requirements/README.md) — install only what the task needs.
+- [Cleanup guide](docs/CLEANUP_GUIDE.md) — rules for keeping generated data
+  out of Git.
+
+Historical AIC 2026 documents are indexed under
+[`docs/archive/aic-2026/`](docs/archive/aic-2026/). They are reference material
+and are not part of the reusable runtime.
+
+## Run the pipeline
+
+Use a data directory outside the repository and pass its paths through the
+stage arguments or environment variables. The compatibility launchers remain
+available:
 
 ```bash
 python -m pipeline.run --help
 python -m pipeline.new_dataset --help
+python run_s01_pipeline.py --help
+python run_new_dataset_pipeline.py --help
 ```
 
-The stages are resumable and should be run against a configured data directory,
-not inside the Git checkout. Configure input/output locations with command-line
-arguments or environment variables; do not commit local paths, models, videos,
-SQLite databases, FAISS indexes or Redis snapshots.
+Run individual stages from their package when debugging, for example:
 
-## Search runtime
+```bash
+python -m pipeline.frames.extract --help
+python -m pipeline.ocr.index --help
+python -m pipeline.asr.index --help
+python -m pipeline.index.bundle --help
+```
 
-The application implementation is `app/main.py`. The root `main.py` remains a
-compatibility wrapper for existing launchers and tests. Start it with the
-existing launcher after installing the dependencies listed in the requirements
-file appropriate for the target environment.
+## Run the application
 
-## Validation
+The implementation is [app/main.py](app/main.py). `main.py` remains a small
+compatibility wrapper for existing launchers. Install the appropriate
+dependency set, configure the external data paths, then start the existing
+launcher for the target environment.
+
+## Validate changes
 
 ```bash
 python -m compileall -q .
 python -m unittest discover -v
 ```
 
-Optional runtime tests require FastAPI, Redis and FAISS dependencies. The
-pre-refactor test limitations are recorded in
-[docs/BASELINE_VALIDATION.md](docs/BASELINE_VALIDATION.md).
-
-Legacy AIC 2026 utilities remain available under `legacy/aic-2026/` for
-reference, but they are not part of the reusable runtime or pipeline.
+See [docs/BASELINE_VALIDATION.md](docs/BASELINE_VALIDATION.md) for the current
+test status and optional dependency requirements.

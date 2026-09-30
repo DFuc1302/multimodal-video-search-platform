@@ -2,8 +2,8 @@
 
 The application is a FastAPI service with a browser interface built from plain
 HTML, CSS, and JavaScript. It does not require Node packages or a frontend build.
-Run the existing WSL launcher and open the server URL; keep the `static/` folder
-beside `main.py` when copying or packaging the application.
+Run the existing launcher and open the server URL; keep the `static/` folder
+with the repository when copying or packaging the application.
 
 ## Interface
 
@@ -35,29 +35,25 @@ elements and `dialogFocus` for modal focus entry, trapping, and restoration.
 
 ## Server and data
 
-- `main.py`: application lifecycle, HTTP routes, and static asset mount.
-- `shared.py`: shared configuration, models, metadata, and vector access.
-- `redis_store.py`, `redis_serving.py`, `federated_runtime.py`: backend adapters.
-- `search_pages.py`, `query_hints.py`, `folder_filter.py`: search helpers.
-- `asr_index.py`, `ocr_index.py`, `summary_search.py`, `kisc.py`: feature services.
-- Build, migration, and packaging scripts remain at their existing paths so
-  documented commands and imports continue to work.
+- `app/main.py`: application lifecycle, HTTP routes, and static asset mount.
+- `app/shared.py`: shared configuration, models, metadata, and vector access.
+- `app/services/`: Redis, telemetry, health, federation and reranking adapters.
+- `pipeline/`: packaged ingest, preprocessing, OCR, ASR and index stages.
+- Root-level launchers remain compatibility wrappers for older commands/imports.
 
 Models, indexes, media, and Redis snapshots are external runtime data. They are
 not frontend assets and must never be placed in `static/`.
 
-`CODE` is the working source; `CODE_FOR_TEAM` is an independently runnable
-distribution. Shared code and `static/` must be copied together. The team
-installer, launcher, packaging tools, and README have distribution-specific
-behavior and should not be overwritten with their `CODE` counterparts.
+The repository is the working source. Runtime data belongs in a separate data
+directory, while `static/` stays with the application source. Historical
+competition packaging and launchers are kept under `legacy/aic-2026/`.
 
 ## Validation
 
-From either source directory, using the installed project Python environment:
+Using the installed project Python environment:
 
 ```sh
 python -m unittest discover -v
-node test_ui.cjs
 ```
 
 The Python suite uses temporary fixtures and tests static asset delivery without
