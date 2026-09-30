@@ -441,16 +441,20 @@ def transcribe_folder(
     )
 
 
-if __name__ == "__main__":
+def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Transcribe videos into fixed two-second searchable windows."
     )
     parser.add_argument("--folder", required=True)
     parser.add_argument("--video-list")
     parser.add_argument("--shard-id")
-    arguments = parser.parse_args()
+    arguments = parser.parse_args(argv)
     transcribe_folder(
         arguments.folder,
         video_list=arguments.video_list,
         shard_id=arguments.shard_id,
     )
+
+
+if __name__ == "__main__":
+    main()

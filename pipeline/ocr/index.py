@@ -992,7 +992,7 @@ def build_index():
 # Standalone entry point — run this file directly to index everything
 # ══════════════════════════════════════════════════════════════════════════════
 
-if __name__ == "__main__":
+def main():
     from shared import init_db
     log.info("=== OCR/Image indexing: initializing database ===")
     init_db()
@@ -1002,3 +1002,7 @@ if __name__ == "__main__":
     backfill_ocr()
     n = get_collection().count()
     log.info(f"=== OCR/Image indexing complete — {n} frames indexed ===")
+
+
+if __name__ == "__main__":
+    main()
