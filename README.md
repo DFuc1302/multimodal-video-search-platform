@@ -8,6 +8,7 @@ keeps generated media, models, indexes and Redis data outside Git.
 
 ```text
 app/                 Search API and runtime helpers
+app/services/        Redis, telemetry, health, conversation and reranking services
 pipeline/            Ingest, frames, dedupe, OCR, ASR, merge and index stages
 web assets            index.html and static/
 tests                Active regression tests at the repository root for now

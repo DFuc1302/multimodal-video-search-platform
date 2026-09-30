@@ -32,7 +32,8 @@ been updated together.
 
 The runtime consumes the output of the processing stages:
 
-- `main.py`: search API and application runtime.
+- `app/main.py`: search API and application runtime.
+- `app/services/`: Redis, health, telemetry, conversation and reranking services.
 - `team_runtime.py`: local runtime wrapper and readiness checks.
 - `run_local_server_wsl.sh`: local server launcher.
 - `static/` and `index.html`: browser interface.
