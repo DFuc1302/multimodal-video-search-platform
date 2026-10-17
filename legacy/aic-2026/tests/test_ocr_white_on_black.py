@@ -39,7 +39,7 @@ class WhiteOnBlackTests(unittest.TestCase):
 
     def test_refinement_is_filtered_using_original_pixels(self):
         # Load only the finishing function; no model or production DB imports.
-        tree = ast.parse(Path(__file__).with_name('ocr_index.py').read_text(encoding='utf-8'))
+        tree = ast.parse((Path(__file__).parent / 'pipeline' / 'ocr' / 'index.py').read_text(encoding='utf-8'))
         node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == '_finish_ocr')
         texts = [self.reading()]
         scope = dict(OCR_ENHANCE=True, OCR_WHITE_ON_BLACK_ONLY=True,
@@ -58,7 +58,7 @@ class WhiteOnBlackTests(unittest.TestCase):
         self.assertEqual(finish(self.panel(background=180), texts), texts)
 
     def test_fast_decode_keeps_original_colors_for_filter(self):
-        tree = ast.parse(Path(__file__).with_name('ocr_index.py').read_text(encoding='utf-8'))
+        tree = ast.parse((Path(__file__).parent / 'pipeline' / 'ocr' / 'index.py').read_text(encoding='utf-8'))
         node = next(n for n in tree.body if isinstance(n, ast.FunctionDef)
                     and n.name == '_read_prepared_ocr_image')
         image = self.panel()

@@ -1,0 +1,2 @@
+# Frame extraction, OCR, ASR, merge and indexing dependencies.
+-r ../requirements_wsl.txt

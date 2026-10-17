@@ -1,120 +1,77 @@
-# AIC Search: ban chay local cho dong doi
+# Reusable multimodal video search
 
-## Thu muc can tai ve tu Drive
+This repository contains a reusable university project for processing video,
+building multimodal indexes and serving search results. Generated media,
+models, databases, FAISS indexes and Redis data are kept outside the Git
+checkout.
 
-Dat ba folder sau cung cap, ten folder goc tuy y:
+## Repository map
 
 ```text
-AIC_TEAM/
-  CODE_FOR_TEAM/
-    install_requirements_wsl.sh
-    run_local_server_wsl.sh
-    README.md
-    ...cac file code khac
-  DATA_FOR_TEAM/
-    search_index_ocr/
-      meta.db
-      faiss_index/
-      clip_text/
-      asr_cache.json
-      serve_manifest.json
-      serve_stats.json
-    models/multilingual-e5-small/
-    redis_runtime/
-    redis_data/appendonlydir/
-    inventory.json
-  filtered_data_all_873_moved/
-    ...giu nguyen cac folder chu de va keyframes ben trong
-    map-keyframes/
-    transcripts_asr/
-  videos/                    (tuy chon: video goc)
+app/                  FastAPI search application and runtime services
+pipeline/             Ingest, frames, dedupe, merge, OCR, ASR and indexing
+static/               Browser assets
+benchmark/            Evaluation notes and frozen qrels workflow
+docs/                 Architecture, pipeline map and maintenance notes
+legacy/aic-2026/      Retired competition, Colab and submission utilities
+requirements/         Runtime, pipeline and development dependency sets
 ```
 
-Tai day du ve o dia local va giai nen truoc khi chay. Khong chay truc tiep
-tren o Drive dang stream. Khong doi ten cac folder con/keyframe.
-DATA_FOR_TEAM la ban sao da xu ly; khong can chay OCR, ASR, CLIP indexing
-hay migration Redis. Khong gui .venv hoac Python environment cua may nguon.
+The processing flow is:
 
-## Cai lan dau
+```text
+videos -> manifest -> frames -> dedupe -> merge
+       -> OCR + ASR -> bundle/index -> validation -> search API
+```
 
-Dung Windows + WSL Ubuntu 24.04 x86_64. Neu chua co WSL, mo PowerShell
-voi quyen Administrator va chay `wsl --install -d Ubuntu-24.04`, khoi dong
-lai neu Windows yeu cau, sau do tao user Ubuntu.
+## Start with the documentation
 
-Mo terminal Ubuntu. Vi du ban tai bo du lieu vao D:\AIC_TEAM:
+- [Architecture](docs/ARCHITECTURE.md) — application and browser structure.
+- [Pipeline map](docs/PIPELINE_MAP.md) — stage inputs, outputs and contracts.
+- [Pipeline guide](pipeline/README.md) — packaged stage entry points.
+- [Requirements](requirements/README.md) — install only what the task needs.
+- [Cleanup guide](docs/CLEANUP_GUIDE.md) — rules for keeping generated data
+  out of Git.
+
+Historical AIC 2026 documents are indexed under
+[`docs/archive/aic-2026/`](docs/archive/aic-2026/). They are reference material
+and are not part of the reusable runtime.
+
+## Run the pipeline
+
+Use a data directory outside the repository and pass its paths through the
+stage arguments or environment variables. The compatibility launchers remain
+available:
 
 ```bash
-cd /mnt/d/AIC_TEAM/CODE_FOR_TEAM
-bash install_requirements_wsl.sh
+python -m pipeline.run --help
+python -m pipeline.new_dataset --help
+python run_s01_pipeline.py --help
+python run_new_dataset_pipeline.py --help
 ```
 
-Can Internet de tai dependencies va mat khau Ubuntu de cai goi he thong.
-Moi truong Python duoc tao tai ~/.venvs/aic-team. Goi PyTorch ho tro CUDA
-11.8; may khong co GPU NVIDIA van chay bang CPU, toc do tim kiem cham hon.
-Moi may dung ban sao data va Redis rieng, khong can ket noi may cua dong doi.
-
-## Chay moi lan
+Run individual stages from their package when debugging, for example:
 
 ```bash
-cd /mnt/d/AIC_TEAM/CODE_FOR_TEAM
-bash run_local_server_wsl.sh
+python -m pipeline.frames.extract --help
+python -m pipeline.ocr.index --help
+python -m pipeline.asr.index --help
+python -m pipeline.index.bundle --help
 ```
 
-Launcher uu tien `TEAM_VENV` neu duoc chi dinh; mac dinh dung
-`~/.venvs/aic-team`. Neu moi truong mac dinh chua co, launcher thu `.venv`
-trong `CODE_FOR_TEAM`, roi `../CODE/.venv`. Co the dung lai moi truong da
-cai requirements bang `TEAM_VENV=../CODE/.venv bash run_local_server_wsl.sh`.
-`DATA_ROOT` neu duoc truyen vao se duoc giu nguyen.
+## Run the application
 
-Cho log `Application startup complete`, mo http://localhost:8080.
-Kiem tra http://localhost:8080/ready. Nhan Ctrl+C de tat ca API va Redis
-do launcher nay khoi dong. Redis can nap snapshot vao RAM moi lan bat;
-CLIP text encoder duoc nap va chay thu tim kiem truoc khi server nhan ket noi.
-Duong dan server chi duoc in sau khi readiness thanh cong.
-Model CLIP va summary da kem trong bo data.
+The implementation is [app/main.py](app/main.py). `main.py` remains a small
+compatibility wrapper for existing launchers. Install the appropriate
+dependency set, configure the external data paths, then start the existing
+launcher for the target environment.
 
-Frame search va include/exclude dung SQLite/FAISS. OCR, ASR, summary dung
-Redis tai 127.0.0.1. API cung chi nghe tren may local.
-
-Neu port ban, tat server cu hoac chon port khac:
+## Validate changes
 
 ```bash
-SERVER_PORT=8081 REDIS_PORT=16380 bash run_local_server_wsl.sh
+python -m compileall -q .
+python -m unittest discover -v
 ```
 
-Neu de folder anh hoac data o o dia khac:
-
-```bash
-TEAM_DATA=/home/your-user/AIC_DATA \
-KEYFRAMES_DIR=/mnt/e/filtered_data_all_873_moved \
-bash run_local_server_wsl.sh
-```
-
-Nen de DATA_FOR_TEAM trong filesystem Linux cua WSL neu o /mnt/c hoac
-/mnt/d nap cham. Anh co the van de tren Windows. Neu muon xem video goc:
-
-```bash
-VIDEOS_DIR=/mnt/e/videos bash run_local_server_wsl.sh
-```
-
-## Kiem tra file sau khi tai
-
-```bash
-python3 verify_package.py
-```
-
-Lenh nay doi chieu SHA-256 cac file xu ly trong DATA_FOR_TEAM. Chay truoc
-lan bat server dau tien: Redis se cap nhat AOF khi chay nen checksum snapshot
-co the thay doi sau do. Lenh nay cung kiem tra duong dan cua toan bo 177.321
-keyframe trong index deu co trong folder anh; giu nguyen cau truc khi upload.
-
-## File chi danh cho nguoi dong goi
-
-package_processed_data.py chi chay tren may nguon de tao ban sao ban dau.
-Dong doi KHONG chay file nay, cac script build/index hay migrate_to_redis.py.
-Chi can install_requirements_wsl.sh va run_local_server_wsl.sh.
-
-## Interface maintenance
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the UI layout, shared components, and validation commands. Include the entire static/ folder when copying CODE_FOR_TEAM.
-
+See [docs/BASELINE_VALIDATION.md](docs/BASELINE_VALIDATION.md) for the current
+test status and optional dependency requirements.
